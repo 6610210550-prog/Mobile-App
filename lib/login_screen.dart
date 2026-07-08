@@ -34,9 +34,9 @@ class _LoginScreenState extends State<LoginScreen> {
   String authenRequestString = sha256
       .convert(utf8.encode(combinedString))
       .toString();
-  print(authenRequestString);
+  print("authenRequestString: $authenRequestString");
   final response = await http.post(
-    Uri.parse("${Appconfig.apiBaseUrl}/authen/authen_requruest"),
+    Uri.parse("${Appconfig.apiBaseUrl}/authen/authen_request"),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
@@ -55,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
   
 }
 
-Future<({bool isError, String data , String erroeMessage})>_accessRequest(
+Future<({bool isError, String data , String errorMessage})>_accessRequest(
   String authenToken,
   
 ) async {
@@ -67,6 +67,8 @@ Future<({bool isError, String data , String erroeMessage})>_accessRequest(
 
   print(combinedString);
   print(authenSignature);
+  
+ 
 
   final response = await http.post(
     Uri.parse("${Appconfig.apiBaseUrl}/authen/access_request"),
@@ -94,12 +96,13 @@ Future<({bool isError, String data , String erroeMessage})>_accessRequest(
   return (
     isError: json["isError"] as bool,
     data: json["data"]["access_token"] as String,
-    erroeMessage: json["errorMessage"] as String,
+    errorMessage: json["errorMessage"] as String,
   );
   
 }
 void _doLogin (BuildContext context) async{
   var (isError , authenToken, errorMessage) = await _authenRequest();
+  print("authenToken: $authenToken");
 
   if(isError) {
     showDialog(
@@ -110,13 +113,15 @@ void _doLogin (BuildContext context) async{
         );    
   }else{
     var result = await _accessRequest(authenToken);
+
+    print("access_token: ${result.data}");
     if(result.isError) {
       //TO DO
   }else{
     showDialog(
       context:context,
       builder: (context) {
-        return AlertDialog(content: Text(result.erroeMessage));
+        return AlertDialog(content: Text(result.errorMessage));
       },
     );
   }
@@ -126,6 +131,8 @@ void _doLogin (BuildContext context) async{
 
   @override
   Widget build(BuildContext context) {
+
+     print("BUILD LOGIN SCREEN");
     return Scaffold(
       body: Container(
         height: double.infinity,
